@@ -1,21 +1,24 @@
-# Imagen base oficial de Python 3.11
-FROM python:3.11-slim
+# Imagen base con Python 2.7
+FROM python:2.7-slim
 
 # Instalar OpenSSH y curl
 RUN apt-get update && apt-get install -y openssh-server curl && rm -rf /var/lib/apt/lists/*
 
 # Crear usuario 'docker' con contraseña 'docker123'
-RUN useradd -m -s /bin/bash docker && echo 'thomas:culturavpn' | chpasswd
+RUN useradd -m -s /bin/bash docker && echo 'docker:docker123' | chpasswd
 
 # Habilitar autenticación por contraseña en SSH
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
-# Configurar directorio de trabajo y descargar script WebSocket
+# Crear carpeta para SSH si no existe
+RUN mkdir /var/run/sshd
+
+# Directorio de trabajo y descarga del script
 WORKDIR /app
 RUN curl -o websocket973.py https://raw.githubusercontent.com/nube50/SshWs8080/refs/heads/main/websocket973.py
 
-# Exponer solo el puerto 8080 (no se expone el 22)
+# Exponer solo el puerto 8080
 EXPOSE 8080
 
-# Iniciar el servidor SSH y ejecutar el script WebSocket
-CMD ["/bin/bash", "-c", "/usr/sbin/sshd && exec python3 websocket973.py 8080"]
+# Iniciar SSH y ejecutar el script con Python 2
+CMD /usr/sbin/sshd && python websocket973.py 8080
