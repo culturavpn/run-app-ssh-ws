@@ -1,18 +1,19 @@
-FROM python:2.7-slim
+FROM python:2.7-alpine
 
 # Instalar dependencias necesarias
-RUN apt-get update && apt-get install -y \
+RUN apk update && apk add --no-cache \
     dropbear \
     curl \
     gcc \
     libffi-dev \
     libssl-dev \
     python-dev \
+    musl-dev \
     && pip install paramiko \
     && rm -rf /var/lib/apt/lists/*
 
 # Crear usuario para autenticación SSH
-RUN useradd -m docker && echo "thomas:culturavpn" | chpasswd
+RUN adduser -D -s /bin/bash docker && echo "docker:docker123" | chpasswd
 
 # Crear carpetas necesarias para Dropbear
 RUN mkdir -p /etc/dropbear /var/run/dropbear
@@ -33,5 +34,7 @@ RUN chmod +x websocket973.py
 ENV PORT=8080
 EXPOSE 8080
 
-# Ejecutar Dropbear en segundo plano y el script en primer plano
-CMD dropbear -E -F -p 22 & python websocket973.py 8080
+# Agregar logs de Dropbear y del script Python
+
+# Ejecutar Dropbear y capturar sus logs
+CMD (echo "Iniciando Dropbear..." && dropbear -E -F -p 22 -v) & (echo "Ejecutando websocket973.py..." && python websocket973.py 8080)
