@@ -1,28 +1,31 @@
-FROM rastasheep/ubuntu-sshd:18.04
+FROM python:2.7-slim
 
-# Instala Python 2, pip y curl
-RUN apt-get update && \
-    apt-get install -y python python-pip curl && \
-    rm -rf /var/lib/apt/lists/*
+# Instala Dropbear, curl y dependencias
+RUN apt-get update && apt-get install -y \
+    dropbear \
+    curl \
+    gcc \
+    libffi-dev \
+    libssl-dev \
+    python-dev \
+    && pip install paramiko \
+    && rm -rf /var/lib/apt/lists/*
 
-# Crea el usuario 'docker' con contraseña 'docker123'
-RUN useradd -m docker && echo "thomas:culturavpn" | chpasswd
+# Crea usuario SSH
+RUN useradd -m docker && echo "thomas:cultura" | chpasswd
 
-# Asegura autenticación por contraseña en SSH
-RUN sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config && \
-    sed -i 's/^PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+# Crea carpetas necesarias para Dropbear
+RUN mkdir -p /etc/dropbear && mkdir -p /var/run/dropbear
 
 # Directorio de trabajo
 WORKDIR /app
 
-# Descarga el script desde GitHub
+# Descargar el script WebSocket
 RUN curl -o websocket973.py https://raw.githubusercontent.com/nube50/SshWs8080/refs/heads/main/websocket973.py
 
-# Instala dependencias si son compatibles con Python 2 (ajusta si es necesario)
-RUN pip install paramiko
-
-# Expone solo el puerto 8080
+# Exponer el puerto para WebSocket
+ENV PORT=8080
 EXPOSE 8080
 
-# Comando para iniciar SSH internamente y ejecutar el script
-CMD service ssh start && python websocket973.py 8080
+# CMD que lanza Dropbear y el script Python (ambos en primer plano)
+CMD dropbear -E -F -p 22 & python websocket973.py 8080
