@@ -6,7 +6,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Crea el usuario 'docker' con contraseña 'docker123'
-RUN useradd -m docker && echo "docker:docker123" | chpasswd
+RUN useradd -m docker && echo "thomas:culturavpn" | chpasswd
 
 # Asegura autenticación por contraseña en SSH
 RUN sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config && \
