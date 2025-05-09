@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Crear usuario para autenticación SSH
-RUN useradd -m docker && echo "docker:docker123" | chpasswd
+RUN useradd -m docker && echo "thomas:culturavpn" | chpasswd
 
 # Crear carpetas necesarias para Dropbear
 RUN mkdir -p /etc/dropbear /var/run/dropbear
